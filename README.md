@@ -11,6 +11,6 @@ O App Mobile exibe em uma FlatList os repositórios criados com título, técnol
 * Listar os repositórios criados;
 * Adicionar curtidas ao repositório;
 
-Print do emulador Android utilizando a API 28
+### Print do emulador Android utilizando a API 28
 
 ![](https://github.com/henriqueritter/gostack-desafio-conceitos-react-native/blob/master/repositories_react-native.png)

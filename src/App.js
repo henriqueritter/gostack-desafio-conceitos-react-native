@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   SafeAreaView,
@@ -9,47 +9,83 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import api from "./services/api";
 
 export default function App() {
+  const [repositories, setRepositories] = useState([]);
+
+  //load repositories info to repositories array
+  useEffect(() => {
+    api.get('/repositories').then(response => {
+      setRepositories(response.data);
+      //console.log(repositories);
+    });
+  }, []);
+
   async function handleLikeRepository(id) {
-    // Implement "Like Repository" functionality
+    
+    await api.post(`/repositories/${id}/like`).then(response => {
+      //a rota retorna o repositorio com o LIKE
+
+      //repoUpdate recebe a lista com todos repositorios novamente
+      const repoUpdate = repositories.map(repo => {
+        if(repo.id === id){
+          //caso encontre o repositorio com a mesma ID do repositorio que foi dado like
+          //ele retorna esse objeto para a array repoUpdate
+          return response.data;
+        } else {
+          //caso o repositorio(posicao da array) nao contenha o ID em questao, ele retorna
+          // o objeto comum
+          return repo;
+        }
+      });
+      //com o useState setamos a array de repositorios novamente
+      setRepositories(repoUpdate);
+    });
   }
 
   return (
     <>
       <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
       <SafeAreaView style={styles.container}>
-        <View style={styles.repositoryContainer}>
-          <Text style={styles.repository}>Repository 1</Text>
+        <FlatList
+          data={repositories}
+          keyExtractor={repo => repo.id}
+          renderItem={({ item: repo }) => (
 
-          <View style={styles.techsContainer}>
-            <Text style={styles.tech}>
-              ReactJS
-            </Text>
-            <Text style={styles.tech}>
-              Node.js
-            </Text>
-          </View>
+            <View style={styles.repositoryContainer}>
+              <Text style={styles.repository}>{repo.title}</Text>
+              
+              <View style={styles.techsContainer}>
+                {repo.techs.map(tech => (
+                  <Text style={styles.tech} key={tech}>
+                    {tech}
+                  </Text>
+                ))}
+              </View>
 
-          <View style={styles.likesContainer}>
-            <Text
-              style={styles.likeText}
-              // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
-              testID={`repository-likes-1`}
+            <View style={styles.likesContainer}>
+              <Text
+                style={styles.likeText}
+                // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
+                testID={`repository-likes-${repo.id}`}
+              >
+                {repo.likes} curtidas
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => handleLikeRepository(repo.id)}
+              // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
+              testID={`like-button-${repo.id}`}
             >
-              3 curtidas
-            </Text>
+              <Text style={styles.buttonText}>Curtir</Text>
+            </TouchableOpacity>
           </View>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => handleLikeRepository(1)}
-            // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
-            testID={`like-button-1`}
-          >
-            <Text style={styles.buttonText}>Curtir</Text>
-          </TouchableOpacity>
-        </View>
+          //Fim da FlatList
+        )} /> 
       </SafeAreaView>
     </>
   );
@@ -96,12 +132,12 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 10,
   },
-  buttonText: {
+  buttonText: { 
     fontSize: 14,
     fontWeight: "bold",
     marginRight: 10,
     color: "#fff",
-    backgroundColor: "#7159c1",
+    backgroundColor: "#3351FF",
     padding: 15,
   },
 });
